@@ -146,7 +146,8 @@ class Hadith {
   /// The hadith number exactly as printed, e.g. "١٦".
   final String numberText;
 
-  /// Canonical hadith text (editor footnote markers held separately).
+  /// Canonical hadith text, exactly as in the source (without the editor's
+  /// footnote markers).
   final String text;
   final List<StyleSpan> spans;
   final int? volume;
@@ -155,33 +156,6 @@ class Hadith {
 
   /// The editor's Tuhfat al-Ashraf reference line(s), if any.
   final String? tuhfa;
-}
-
-/// Which text a footnote marker belongs to.
-enum FootnoteOwner {
-  bookTitle('book_title'),
-  bookPreamble('book_preamble'),
-  bookIntro('book_intro'),
-  chapterTitle('chapter_title'),
-  chapterIntro('chapter_intro'),
-  hadith('hadith');
-
-  const FootnoteOwner(this.column);
-  final String column;
-}
-
-/// An editor footnote marker positioned inside a canonical text, with the
-/// footnote it refers to.
-class FootnoteRef {
-  const FootnoteRef({required this.offset, required this.marker, required this.footnoteId, required this.footnoteText});
-
-  /// Character offset in the owner text where the marker is printed.
-  final int offset;
-
-  /// The marker as printed, e.g. "(٣)".
-  final String marker;
-  final int? footnoteId;
-  final String? footnoteText;
 }
 
 /// Metadata of the installed content database.

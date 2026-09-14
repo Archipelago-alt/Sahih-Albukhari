@@ -31,8 +31,7 @@ Future<void> goBack(WidgetTester tester) => tester.tap(find.byType(BackButton).f
 
 Finder hadith16() => find.ancestor(of: find.text(hadithLabel), matching: find.byType(HadithView));
 
-/// The source text shown by a [SelectableText], without the tappable
-/// editor's footnote markers inserted into it (e.g. `بَابُ(٤)`).
+/// The source text shown by a [SelectableText] (any tappable spans excluded).
 String sourceTextOf(SelectableText w) {
   final out = StringBuffer();
   w.textSpan?.visitChildren((s) {

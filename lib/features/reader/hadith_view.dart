@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,133 +12,54 @@ import 'hadith_actions.dart';
 import 'source_text_spans.dart';
 
 /// Styles derived from the reader settings and palette.
-SourceTextStyles readerTextStyles(AppSettings s, ReaderPalette p, {double scale = 1}) {
-  final base = TextStyle(
+SourceTextStyles readerTextStyles(AppSettings s, ReaderPalette p, {double scale = 1}) => SourceTextStyles(
+  base: TextStyle(
     fontFamily: s.readingFont.family,
     fontFamilyFallback: s.readingFont.fallback,
     fontSize: s.fontSize * scale,
     height: s.lineHeight,
     color: p.text,
-  );
-  return SourceTextStyles(
-    base: base,
-    emphasis: const TextStyle(fontWeight: FontWeight.w700),
-    marker: base.copyWith(fontSize: s.fontSize * scale * 0.6, color: p.marker, height: 1),
-    highlight: p.highlight,
-  );
-}
+  ),
+  emphasis: const TextStyle(fontWeight: FontWeight.w700),
+  highlight: p.highlight,
+);
 
-/// Selectable source text with footnote markers that open the note.
-class SourceText extends StatefulWidget {
+/// Selectable source text, exactly as stored, with the source's emphasis and
+/// any search highlights.
+class SourceText extends StatelessWidget {
   const SourceText({
     super.key,
     required this.text,
     required this.styles,
     this.styleSpans = const [],
-    this.markers = const [],
     this.highlights = const [],
-    this.showMarkers = true,
     this.textAlign = TextAlign.justify,
   });
 
   final String text;
   final SourceTextStyles styles;
   final List<StyleSpan> styleSpans;
-  final List<FootnoteRef> markers;
   final List<MatchRange> highlights;
-  final bool showMarkers;
   final TextAlign textAlign;
 
   @override
-  State<SourceText> createState() => _SourceTextState();
-}
-
-class _SourceTextState extends State<SourceText> {
-  final _recognizers = <TapGestureRecognizer>[];
-
-  void _disposeRecognizers() {
-    for (final r in _recognizers) {
-      r.dispose();
-    }
-    _recognizers.clear();
-  }
-
-  @override
-  void dispose() {
-    _disposeRecognizers();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    _disposeRecognizers();
-    final spans = buildSourceTextSpans(
-      text: widget.text,
-      styles: widget.styles,
-      styleSpans: widget.styleSpans,
-      markers: widget.markers,
-      highlights: widget.highlights,
-      showMarkers: widget.showMarkers,
-      markerRecognizer: (ref) {
-        final r = TapGestureRecognizer()..onTap = () => showFootnoteSheet(context, ref);
-        _recognizers.add(r);
-        return r;
-      },
-    );
+    final spans = buildSourceTextSpans(text: text, styles: styles, styleSpans: styleSpans, highlights: highlights);
     return Directionality(
       textDirection: TextDirection.rtl,
       child: SelectableText.rich(
         TextSpan(children: spans),
-        textAlign: widget.textAlign,
+        textAlign: textAlign,
         textDirection: TextDirection.rtl,
       ),
     );
   }
 }
 
-Future<void> showFootnoteSheet(BuildContext context, FootnoteRef ref) => showModalBottomSheet<void>(
-  context: context,
-  showDragHandle: true,
-  builder: (context) {
-    final theme = Theme.of(context);
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(context.l10n.footnoteTitle(ref.marker), style: theme.textTheme.titleMedium),
-            const SizedBox(height: 4),
-            Text(
-              context.l10n.editorNotesDisclaimer,
-              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-            ),
-            const Divider(height: 24),
-            Text(
-              ref.footnoteText ?? context.l10n.footnoteMissing,
-              textDirection: TextDirection.rtl,
-              style: theme.textTheme.bodyLarge?.copyWith(fontFamily: 'NotoNaskhArabic', height: 1.8),
-            ),
-          ],
-        ),
-      ),
-    );
-  },
-);
-
 class HadithView extends ConsumerStatefulWidget {
-  const HadithView({
-    super.key,
-    required this.hadith,
-    required this.footnotes,
-    required this.book,
-    required this.chapter,
-    this.highlight,
-  });
+  const HadithView({super.key, required this.hadith, required this.book, required this.chapter, this.highlight});
 
   final Hadith hadith;
-  final List<FootnoteRef> footnotes;
   final Book book;
   final Chapter? chapter;
   final SearchRequest? highlight;
@@ -149,7 +69,7 @@ class HadithView extends ConsumerStatefulWidget {
 }
 
 class _HadithViewState extends ConsumerState<HadithView> {
-  bool _notesOpen = false;
+  bool _tuhfaOpen = false;
 
   @override
   Widget build(BuildContext context) {
@@ -157,6 +77,7 @@ class _HadithViewState extends ConsumerState<HadithView> {
     final palette = ReaderPalette.resolve(settings.readerTheme, MediaQuery.platformBrightnessOf(context));
     final styles = readerTextStyles(settings, palette);
     final h = widget.hadith;
+    final tuhfa = h.tuhfa;
     final bookmarked = ref.watch(bookmarkedUidsProvider).value?.contains(h.uid) ?? false;
     final read = ref.watch(readUidsProvider).value?.contains(h.uid) ?? false;
     final note = ref.watch(noteProvider(h.uid)).value;
@@ -164,7 +85,6 @@ class _HadithViewState extends ConsumerState<HadithView> {
         ? const <MatchRange>[]
         : SearchHighlighter.find(h.text, widget.highlight!);
     final l10n = context.l10n;
-    final hasEditorNotes = widget.footnotes.isNotEmpty || h.tuhfa != null;
     final labelStyle = TextStyle(fontFamily: 'NotoSansArabic', fontSize: 14, color: palette.muted);
 
     return Column(
@@ -196,37 +116,23 @@ class _HadithViewState extends ConsumerState<HadithView> {
               tooltip: l10n.readerMore,
               color: palette.muted,
               icon: const Icon(Icons.more_horiz),
-              onPressed: () => showHadithActions(
-                context,
-                ref,
-                hadith: h,
-                footnotes: widget.footnotes,
-                book: widget.book,
-                chapter: widget.chapter,
-              ),
+              onPressed: () => showHadithActions(context, ref, hadith: h, book: widget.book, chapter: widget.chapter),
             ),
           ],
         ),
         const SizedBox(height: 8),
-        SourceText(
-          text: h.text,
-          styles: styles,
-          styleSpans: h.spans,
-          markers: widget.footnotes,
-          highlights: highlights,
-          showMarkers: settings.showFootnoteMarkers,
-        ),
-        if (hasEditorNotes)
+        SourceText(text: h.text, styles: styles, styleSpans: h.spans, highlights: highlights),
+        if (tuhfa != null)
           Align(
             alignment: AlignmentDirectional.centerStart,
             child: TextButton.icon(
               style: TextButton.styleFrom(foregroundColor: palette.muted),
-              onPressed: () => setState(() => _notesOpen = !_notesOpen),
-              icon: Icon(_notesOpen ? Icons.expand_less : Icons.expand_more, size: 18),
-              label: Text(_notesOpen ? l10n.hideEditorNotes : l10n.showEditorNotes, style: labelStyle),
+              onPressed: () => setState(() => _tuhfaOpen = !_tuhfaOpen),
+              icon: Icon(_tuhfaOpen ? Icons.expand_less : Icons.expand_more, size: 18),
+              label: Text(_tuhfaOpen ? l10n.hideTuhfa : l10n.showTuhfa, style: labelStyle),
             ),
           ),
-        if (_notesOpen && hasEditorNotes) _EditorNotes(hadith: h, footnotes: widget.footnotes, palette: palette),
+        if (_tuhfaOpen && tuhfa != null) _TuhfaReference(tuhfa: tuhfa, palette: palette),
         if (note != null)
           Padding(
             padding: const EdgeInsets.only(top: 12),
@@ -264,11 +170,12 @@ class _HadithViewState extends ConsumerState<HadithView> {
   }
 }
 
-class _EditorNotes extends StatelessWidget {
-  const _EditorNotes({required this.hadith, required this.footnotes, required this.palette});
+/// The edition's Tuhfat al-Ashraf reference, set apart from the text and
+/// labelled as the editor's addition.
+class _TuhfaReference extends StatelessWidget {
+  const _TuhfaReference({required this.tuhfa, required this.palette});
 
-  final Hadith hadith;
-  final List<FootnoteRef> footnotes;
+  final String tuhfa;
   final ReaderPalette palette;
 
   @override
@@ -280,7 +187,6 @@ class _EditorNotes extends StatelessWidget {
       height: 1.8,
       color: palette.muted,
     );
-    final seen = <int?>{};
     return Container(
       margin: const EdgeInsets.only(top: 4),
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
@@ -290,21 +196,9 @@ class _EditorNotes extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            context.l10n.editorNotesTitle,
-            style: style.copyWith(fontWeight: FontWeight.w700, fontFamily: 'NotoSansArabic', fontSize: 13),
-          ),
-          Text(context.l10n.editorNotesDisclaimer, style: style.copyWith(fontSize: 12, fontFamily: 'NotoSansArabic')),
-          const SizedBox(height: 6),
-          for (final f in footnotes)
-            if (seen.add(f.footnoteId))
-              Text(
-                '${f.marker} ${f.footnoteText ?? context.l10n.footnoteMissing}',
-                textDirection: TextDirection.rtl,
-                style: style,
-              ),
-          if (hadith.tuhfa != null)
-            Text('${context.l10n.tuhfaLabel}: ${hadith.tuhfa}', textDirection: TextDirection.rtl, style: style),
+          Text(context.l10n.tuhfaDisclaimer, style: style.copyWith(fontSize: 12, fontFamily: 'NotoSansArabic')),
+          const SizedBox(height: 4),
+          Text('${context.l10n.tuhfaLabel}: $tuhfa', textDirection: TextDirection.rtl, style: style),
         ],
       ),
     );

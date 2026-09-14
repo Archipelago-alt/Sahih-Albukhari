@@ -47,6 +47,7 @@ class AboutScreen extends ConsumerWidget {
                     Text('${e.key}: ${e.value}', textDirection: TextDirection.rtl, style: theme.textTheme.bodySmall),
                 const SizedBox(height: 8),
                 para(l10n.aboutSourceNote),
+                para(l10n.aboutUsage),
                 para(l10n.aboutVerification),
                 para(l10n.aboutNoTranslation),
                 if (info?.sourceContentSha256 case final sha?)

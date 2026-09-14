@@ -36,7 +36,6 @@ Future<void> showHadithActions(
   BuildContext context,
   WidgetRef ref, {
   required Hadith hadith,
-  required List<FootnoteRef> footnotes,
   required Book book,
   required Chapter? chapter,
 }) async {
@@ -81,11 +80,11 @@ Future<void> showHadithActions(
               title: Text(l10n.readerCopy),
               onTap: () => Navigator.pop(context, 'copy'),
             ),
-            if (footnotes.isNotEmpty || hadith.tuhfa != null)
+            if (hadith.tuhfa != null)
               ListTile(
                 leading: const Icon(Icons.copy_all),
-                title: Text(l10n.readerCopyWithFootnotes),
-                onTap: () => Navigator.pop(context, 'copy_notes'),
+                title: Text(l10n.readerCopyWithTuhfa),
+                onTap: () => Navigator.pop(context, 'copy_tuhfa'),
               ),
             ListTile(
               leading: const Icon(Icons.share_outlined),
@@ -118,16 +117,10 @@ Future<void> showHadithActions(
         ),
       );
       if (context.mounted) context.showSnack(l10n.readerCopied);
-    case 'copy_notes':
+    case 'copy_tuhfa':
       await Clipboard.setData(
         ClipboardData(
-          text: HadithShareText.withEditorNotes(
-            hadith: hadith,
-            footnotes: footnotes,
-            reference: reference,
-            notesTitle: l10n.editorNotesTitle,
-            tuhfaLabel: l10n.tuhfaLabel,
-          ),
+          text: HadithShareText.withTuhfa(hadith: hadith, reference: reference, tuhfaLabel: l10n.tuhfaLabel),
         ),
       );
       if (context.mounted) context.showSnack(l10n.readerCopied);

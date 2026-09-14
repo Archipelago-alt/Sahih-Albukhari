@@ -45,7 +45,6 @@ class ReaderOutline {
     required this.hadithIndex,
     required this.chapterIndex,
     required this.hadithIds,
-    required this.notes,
   });
 
   static const int blockSize = 20;
@@ -60,11 +59,6 @@ class ReaderOutline {
   final Map<int, int> chapterIndex;
   final List<int> hadithIds;
 
-  /// Editor footnote markers of book/chapter texts, keyed by owner.
-  final Map<(FootnoteOwner, int), List<FootnoteRef>> notes;
-
-  List<FootnoteRef> notesOf(FootnoteOwner owner, int id) => notes[(owner, id)] ?? const [];
-
   Chapter? chapterAt(int index) {
     final id = entryChapterId[index.clamp(0, entries.length - 1)];
     return id == null ? null : chapters[id];
@@ -74,7 +68,6 @@ class ReaderOutline {
     required Book book,
     required List<Chapter> chapters,
     required List<({int id, String uid, int chapterId})> hadiths,
-    Map<(FootnoteOwner, int), List<FootnoteRef>> notes = const {},
   }) {
     final byChapter = <int, List<({int id, String uid, int chapterId})>>{};
     for (final h in hadiths) {
@@ -112,7 +105,6 @@ class ReaderOutline {
       hadithIndex: hadithIndex,
       chapterIndex: chapterIndex,
       hadithIds: ids,
-      notes: notes,
     );
   }
 }
@@ -122,39 +114,18 @@ final readerOutlineProvider = FutureProvider.family<ReaderOutline, int>((ref, bo
   final book = await repo.book(bookId);
   final chapters = await repo.chaptersOfBook(bookId);
   final hadiths = await repo.hadithOutline(bookId);
-  final notes = <(FootnoteOwner, int), List<FootnoteRef>>{};
-  Future<void> load(FootnoteOwner owner, List<int> ids) async {
-    for (final e in (await repo.footnotesFor(owner, ids)).entries) {
-      notes[(owner, e.key)] = e.value;
-    }
-  }
-
-  await load(FootnoteOwner.bookTitle, [bookId]);
-  await load(FootnoteOwner.bookPreamble, [bookId]);
-  await load(FootnoteOwner.bookIntro, [bookId]);
-  final chapterIds = [for (final c in chapters) c.id];
-  await load(FootnoteOwner.chapterTitle, chapterIds);
-  await load(FootnoteOwner.chapterIntro, chapterIds);
-  return ReaderOutline.build(book: book, chapters: chapters, hadiths: hadiths, notes: notes);
+  return ReaderOutline.build(book: book, chapters: chapters, hadiths: hadiths);
 });
-
-class LoadedHadith {
-  const LoadedHadith(this.hadith, this.footnotes);
-  final Hadith hadith;
-  final List<FootnoteRef> footnotes;
-}
 
 /// Hadith texts of one block of a book, loaded on demand and released when
 /// no longer on screen (keeps memory flat while browsing long books).
-final hadithBlockProvider = FutureProvider.autoDispose.family<Map<int, LoadedHadith>, ({int bookId, int block})>((
+final hadithBlockProvider = FutureProvider.autoDispose.family<Map<int, Hadith>, ({int bookId, int block})>((
   ref,
   key,
 ) async {
   final outline = await ref.watch(readerOutlineProvider(key.bookId).future);
   final start = key.block * ReaderOutline.blockSize;
   final ids = outline.hadithIds.sublist(start, (start + ReaderOutline.blockSize).clamp(0, outline.hadithIds.length));
-  final repo = ref.watch(contentRepositoryProvider);
-  final hadiths = await repo.hadithsByIds(ids);
-  final notes = await repo.footnotesFor(FootnoteOwner.hadith, ids);
-  return {for (final h in hadiths) h.id: LoadedHadith(h, notes[h.id] ?? const [])};
+  final hadiths = await ref.watch(contentRepositoryProvider).hadithsByIds(ids);
+  return {for (final h in hadiths) h.id: h};
 });

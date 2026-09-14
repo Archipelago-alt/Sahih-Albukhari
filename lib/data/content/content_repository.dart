@@ -3,7 +3,7 @@ import 'package:drift/drift.dart';
 import 'content_database.dart';
 import 'content_models.dart';
 
-/// Read-only access to books, chapters, hadiths and editor footnotes.
+/// Read-only access to books, chapters and hadiths.
 class ContentRepository {
   ContentRepository(this._db);
 
@@ -153,37 +153,6 @@ class ContentRepository {
   Future<Map<int, int>> hadithCountsByBook() async => {
     for (final r in await _select('SELECT id, hadith_count FROM books')) r.read<int>('id'): r.read<int>('hadith_count'),
   };
-
-  // ------------------------------------------------------------ footnotes
-
-  Future<List<FootnoteRef>> footnotes(FootnoteOwner owner, int ownerId) async =>
-      (await footnotesFor(owner, [ownerId]))[ownerId] ?? const [];
-
-  /// Footnote markers of several owners of the same kind, ordered by offset.
-  Future<Map<int, List<FootnoteRef>>> footnotesFor(FootnoteOwner owner, List<int> ownerIds) async {
-    if (ownerIds.isEmpty) return const {};
-    final rows = await _select(
-      'SELECT r.owner_id, r.char_offset, r.marker, r.footnote_id, f.text '
-      'FROM footnote_refs r LEFT JOIN footnotes f ON f.id = r.footnote_id '
-      'WHERE r.owner_type = ? AND r.owner_id IN (${_placeholders(ownerIds.length)}) '
-      'ORDER BY r.owner_id, r.char_offset, r.id',
-      [owner.column, ...ownerIds],
-    );
-    final out = <int, List<FootnoteRef>>{};
-    for (final r in rows) {
-      out
-          .putIfAbsent(r.read<int>('owner_id'), () => [])
-          .add(
-            FootnoteRef(
-              offset: r.read<int>('char_offset'),
-              marker: r.read<String>('marker'),
-              footnoteId: r.readNullable<int>('footnote_id'),
-              footnoteText: r.readNullable<String>('text'),
-            ),
-          );
-    }
-    return out;
-  }
 
   // -------------------------------------------------------------- mapping
 

@@ -215,9 +215,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get readerCopy => 'Copy hadith';
 
   @override
-  String get readerCopyWithFootnotes => 'Copy with editor\'s notes';
-
-  @override
   String get readerShare => 'Share';
 
   @override
@@ -265,28 +262,20 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get editorNotesTitle => 'Editor\'s notes';
-
-  @override
-  String get editorNotesDisclaimer =>
-      'These notes are the work of the edition\'s editor, not part of the text of Sahih al-Bukhari.';
-
-  @override
-  String footnoteTitle(String marker) {
-    return 'Note $marker';
-  }
-
-  @override
-  String get footnoteMissing => 'The source has no note with this number.';
-
-  @override
   String get tuhfaLabel => 'Tuhfat al-Ashraf';
 
   @override
-  String get showEditorNotes => 'Show editor\'s notes';
+  String get showTuhfa => 'Show Tuhfat al-Ashraf reference';
 
   @override
-  String get hideEditorNotes => 'Hide editor\'s notes';
+  String get hideTuhfa => 'Hide Tuhfat al-Ashraf reference';
+
+  @override
+  String get tuhfaDisclaimer =>
+      'The Tuhfat al-Ashraf number was added by the edition\'s editor; it is not part of the text of Sahih al-Bukhari.';
+
+  @override
+  String get readerCopyWithTuhfa => 'Copy with Tuhfat al-Ashraf reference';
 
   @override
   String get settingsFontSize => 'Font size';
@@ -323,9 +312,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsKeepAwake => 'Keep the screen on while reading';
-
-  @override
-  String get settingsShowFootnoteMarkers => 'Show editor\'s note numbers in the text';
 
   @override
   String get searchTitle => 'Search';
@@ -636,7 +622,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutSourceNote =>
-      'The text is shown exactly as in the source. The editor\'s introduction is omitted. The editor\'s notes are shown separately from the text.';
+      'The text is shown exactly as in the source. The app contains only the book names, chapter names, hadith texts, their numbering and references; the editor\'s introduction, the editor\'s footnotes and other supplementary material are omitted.';
+
+  @override
+  String get aboutUsage => 'Private, non-commercial test build.';
 
   @override
   String get aboutVerification =>

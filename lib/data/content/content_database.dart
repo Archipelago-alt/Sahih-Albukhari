@@ -16,7 +16,8 @@ class ContentDatabase extends GeneratedDatabase {
       ContentDatabase(NativeDatabase.createInBackground(file, setup: (db) => db.execute('PRAGMA query_only = ON;')));
 
   /// Content schema version this app understands (`PRAGMA user_version`).
-  static const int supportedSchemaVersion = 1;
+  /// Version 2: the editor's footnote tables were removed.
+  static const int supportedSchemaVersion = 2;
 
   @override
   int get schemaVersion => supportedSchemaVersion;

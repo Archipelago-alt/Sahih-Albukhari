@@ -87,12 +87,6 @@ class ReaderSettingsPanel extends ConsumerWidget {
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text(l10n.settingsShowFootnoteMarkers),
-              value: s.showFootnoteMarkers,
-              onChanged: (v) => c.update((s) => s.copyWith(showFootnoteMarkers: v)),
-            ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
               title: Text(l10n.settingsKeepAwake),
               value: s.keepAwake,
               onChanged: (v) => c.update((s) => s.copyWith(keepAwake: v)),

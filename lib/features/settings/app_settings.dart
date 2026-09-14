@@ -18,7 +18,6 @@ class AppSettings {
     this.lineHeight = 1.9,
     this.pagePadding = 20,
     this.keepAwake = false,
-    this.showFootnoteMarkers = true,
     this.searchBroadDefault = false,
     this.searchWholeWordsDefault = false,
   });
@@ -38,7 +37,6 @@ class AppSettings {
   final double lineHeight;
   final double pagePadding;
   final bool keepAwake;
-  final bool showFootnoteMarkers;
   final bool searchBroadDefault;
   final bool searchWholeWordsDefault;
 
@@ -57,7 +55,6 @@ class AppSettings {
     double? lineHeight,
     double? pagePadding,
     bool? keepAwake,
-    bool? showFootnoteMarkers,
     bool? searchBroadDefault,
     bool? searchWholeWordsDefault,
   }) => AppSettings(
@@ -69,7 +66,6 @@ class AppSettings {
     lineHeight: lineHeight ?? this.lineHeight,
     pagePadding: pagePadding ?? this.pagePadding,
     keepAwake: keepAwake ?? this.keepAwake,
-    showFootnoteMarkers: showFootnoteMarkers ?? this.showFootnoteMarkers,
     searchBroadDefault: searchBroadDefault ?? this.searchBroadDefault,
     searchWholeWordsDefault: searchWholeWordsDefault ?? this.searchWholeWordsDefault,
   );
@@ -83,12 +79,12 @@ class AppSettings {
     'line_height': lineHeight.toString(),
     'page_padding': pagePadding.toString(),
     'keep_awake': keepAwake.toString(),
-    'show_footnote_markers': showFootnoteMarkers.toString(),
     'search_broad': searchBroadDefault.toString(),
     'search_whole_words': searchWholeWordsDefault.toString(),
   };
 
-  /// Unknown or malformed values fall back to the defaults.
+  /// Unknown or malformed values fall back to the defaults; keys no longer
+  /// used (e.g. `show_footnote_markers` from older versions) are ignored.
   factory AppSettings.fromMap(Map<String, String> m) {
     const d = AppSettings();
     T pick<T extends Enum>(List<T> values, String? name, T fallback) =>
@@ -108,7 +104,6 @@ class AppSettings {
       lineHeight: num(m['line_height'], d.lineHeight, minLineHeight, maxLineHeight),
       pagePadding: num(m['page_padding'], d.pagePadding, minPadding, maxPadding),
       keepAwake: flag(m['keep_awake'], d.keepAwake),
-      showFootnoteMarkers: flag(m['show_footnote_markers'], d.showFootnoteMarkers),
       searchBroadDefault: flag(m['search_broad'], d.searchBroadDefault),
       searchWholeWordsDefault: flag(m['search_whole_words'], d.searchWholeWordsDefault),
     );

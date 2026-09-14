@@ -1,5 +1,4 @@
 import '../../data/content/content_models.dart';
-import 'source_text_spans.dart';
 
 /// Composes the text placed on the clipboard or shared. The hadith text is
 /// always the untouched canonical text; the reference follows it on its own
@@ -7,29 +6,11 @@ import 'source_text_spans.dart';
 abstract final class HadithShareText {
   static String plain({required Hadith hadith, required String reference}) => '${hadith.text}\n\n$reference';
 
-  static String withEditorNotes({
-    required Hadith hadith,
-    required List<FootnoteRef> footnotes,
-    required String reference,
-    required String notesTitle,
-    required String tuhfaLabel,
-  }) {
-    final b = StringBuffer(textWithMarkers(hadith.text, footnotes));
-    final seen = <String>{};
-    final lines = [
-      for (final f in footnotes)
-        if (f.footnoteText != null && seen.add('${f.footnoteId}')) '${f.marker} ${f.footnoteText}',
-    ];
-    if (lines.isNotEmpty || hadith.tuhfa != null) {
-      b
-        ..write('\n\n— $notesTitle —\n')
-        ..write(lines.join('\n'));
-      if (hadith.tuhfa != null) {
-        if (lines.isNotEmpty) b.write('\n');
-        b.write('$tuhfaLabel: ${hadith.tuhfa}');
-      }
-    }
-    b.write('\n\n$reference');
-    return b.toString();
+  /// The text, then the edition's Tuhfat al-Ashraf reference (when the source
+  /// has one), then the reference line.
+  static String withTuhfa({required Hadith hadith, required String reference, required String tuhfaLabel}) {
+    final tuhfa = hadith.tuhfa;
+    if (tuhfa == null) return plain(hadith: hadith, reference: reference);
+    return '${hadith.text}\n\n$tuhfaLabel: $tuhfa\n\n$reference';
   }
 }

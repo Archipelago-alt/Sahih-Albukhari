@@ -100,10 +100,14 @@ void main() {
       expect(await scalar("SELECT COUNT(*) FROM chapters WHERE is_implicit = 0 AND trim(coalesce(title,'')) = ''"), 0);
     });
 
-    test('every footnote marker points at a real footnote or is reported', () async {
-      final report = jsonDecode(File('data/generated/import_report.json').readAsStringSync()) as Map<String, dynamic>;
-      final unresolved = (report['checks'] as Map<String, dynamic>)['unresolved_footnote_markers'] as List;
-      expect(await scalar('SELECT COUNT(*) FROM footnote_refs WHERE footnote_id IS NULL'), unresolved.length);
+    test("the editor's footnotes are not in the database; references are", () async {
+      final tables = [
+        for (final r in await db.customSelect("SELECT name FROM sqlite_master WHERE type = 'table'").get())
+          r.read<String>('name'),
+      ];
+      expect(tables, isNot(contains('footnotes')));
+      expect(tables, isNot(contains('footnote_refs')));
+      expect(await scalar('SELECT COUNT(*) FROM hadiths WHERE tuhfa IS NOT NULL'), greaterThan(0));
     });
   });
 

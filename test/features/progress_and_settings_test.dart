@@ -43,7 +43,6 @@ void main() {
         lineHeight: 2.2,
         pagePadding: 32,
         keepAwake: true,
-        showFootnoteMarkers: false,
         searchBroadDefault: true,
         searchWholeWordsDefault: true,
       );

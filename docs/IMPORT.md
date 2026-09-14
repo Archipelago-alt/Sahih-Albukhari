@@ -68,19 +68,21 @@ flutter test
 6. **Footnote markers**: a numeric `span.c2` is a marker only if the page
    has a footnote with that number and it advances the page's marker
    sequence (or repeats one); otherwise (e.g. an ayah number inside a Quran
-   quotation) it stays text and is listed in the report.
+   quotation) it stays text and is listed in the report. Markers are
+   removed from the text; neither markers nor footnotes are stored
+   (content schema 2).
 7. **Validate** and **write** the database, report and manifests.
 
 ## Database schema (content, read-only)
 
 - `books`, `chapters` (with `parent_id`/`depth` for nested chapters and
   `is_implicit` for hadiths that the source places under a book without a
-  chapter heading), `hadiths`.
-- `footnotes`, `footnote_refs` (owner type, owner id, character offset,
-  marker).
+  chapter heading), `hadiths` (including `tuhfa`, the edition's Tuhfat
+  al-Ashraf reference).
 - `hadith_search`, `heading_search`: search-only normalized text.
 - `meta`: source, card, checksums, importer version.
-- `PRAGMA user_version` = content schema version.
+- `PRAGMA user_version` = content schema version (2 since the footnote
+  tables were removed on 2026-09-14).
 
 Stable identifiers: books `b<number>`, chapters `b<book>-c<path>` (TOC
 ordinal path; `c0` = implicit), hadiths `h<number>`. User data refers to

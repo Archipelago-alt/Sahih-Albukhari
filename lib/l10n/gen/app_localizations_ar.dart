@@ -220,9 +220,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get readerCopy => 'نسخ الحديث';
 
   @override
-  String get readerCopyWithFootnotes => 'نسخ مع حواشي المحقق';
-
-  @override
   String get readerShare => 'مشاركة';
 
   @override
@@ -270,27 +267,19 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get editorNotesTitle => 'حواشي المحقق';
-
-  @override
-  String get editorNotesDisclaimer => 'هذه الحواشي من عمل محقق الطبعة، وليست من نص صحيح البخاري.';
-
-  @override
-  String footnoteTitle(String marker) {
-    return 'حاشية $marker';
-  }
-
-  @override
-  String get footnoteMissing => 'لا توجد حاشية بهذا الرقم في المصدر.';
-
-  @override
   String get tuhfaLabel => 'تحفة الأشراف';
 
   @override
-  String get showEditorNotes => 'عرض حواشي المحقق';
+  String get showTuhfa => 'عرض مرجع تحفة الأشراف';
 
   @override
-  String get hideEditorNotes => 'إخفاء حواشي المحقق';
+  String get hideTuhfa => 'إخفاء مرجع تحفة الأشراف';
+
+  @override
+  String get tuhfaDisclaimer => 'رقم تحفة الأشراف من إضافة محقق الطبعة، وليس من نص صحيح البخاري.';
+
+  @override
+  String get readerCopyWithTuhfa => 'نسخ مع مرجع تحفة الأشراف';
 
   @override
   String get settingsFontSize => 'حجم الخط';
@@ -327,9 +316,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get settingsKeepAwake => 'إبقاء الشاشة مضاءة أثناء القراءة';
-
-  @override
-  String get settingsShowFootnoteMarkers => 'إظهار أرقام حواشي المحقق في النص';
 
   @override
   String get searchTitle => 'البحث';
@@ -642,7 +628,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get aboutSourceNote =>
-      'يُعرض النص كما هو في المصدر دون تعديل. حُذفت مقدمة التحقيق. حواشي المحقق معروضة منفصلة عن النص.';
+      'يُعرض النص كما هو في المصدر دون تعديل. يقتصر التطبيق على أسماء الكتب والأبواب ونصوص الأحاديث وأرقامها ومراجعها؛ حُذفت مقدمة التحقيق وحواشي المحقق وسائر المواد الإضافية.';
+
+  @override
+  String get aboutUsage => 'نسخة تجريبية خاصة وغير تجارية.';
 
   @override
   String get aboutVerification =>

@@ -452,12 +452,6 @@ abstract class AppLocalizations {
   /// **'نسخ الحديث'**
   String get readerCopy;
 
-  /// No description provided for @readerCopyWithFootnotes.
-  ///
-  /// In ar, this message translates to:
-  /// **'نسخ مع حواشي المحقق'**
-  String get readerCopyWithFootnotes;
-
   /// No description provided for @readerShare.
   ///
   /// In ar, this message translates to:
@@ -536,47 +530,35 @@ abstract class AppLocalizations {
   /// **'صحيح البخاري، {book}، حديث رقم {number} ({page}). ط. دار التأصيل، نص المكتبة الشاملة.'**
   String shareReferenceNoChapter(String book, String number, String page);
 
-  /// No description provided for @editorNotesTitle.
-  ///
-  /// In ar, this message translates to:
-  /// **'حواشي المحقق'**
-  String get editorNotesTitle;
-
-  /// No description provided for @editorNotesDisclaimer.
-  ///
-  /// In ar, this message translates to:
-  /// **'هذه الحواشي من عمل محقق الطبعة، وليست من نص صحيح البخاري.'**
-  String get editorNotesDisclaimer;
-
-  /// No description provided for @footnoteTitle.
-  ///
-  /// In ar, this message translates to:
-  /// **'حاشية {marker}'**
-  String footnoteTitle(String marker);
-
-  /// No description provided for @footnoteMissing.
-  ///
-  /// In ar, this message translates to:
-  /// **'لا توجد حاشية بهذا الرقم في المصدر.'**
-  String get footnoteMissing;
-
   /// No description provided for @tuhfaLabel.
   ///
   /// In ar, this message translates to:
   /// **'تحفة الأشراف'**
   String get tuhfaLabel;
 
-  /// No description provided for @showEditorNotes.
+  /// No description provided for @showTuhfa.
   ///
   /// In ar, this message translates to:
-  /// **'عرض حواشي المحقق'**
-  String get showEditorNotes;
+  /// **'عرض مرجع تحفة الأشراف'**
+  String get showTuhfa;
 
-  /// No description provided for @hideEditorNotes.
+  /// No description provided for @hideTuhfa.
   ///
   /// In ar, this message translates to:
-  /// **'إخفاء حواشي المحقق'**
-  String get hideEditorNotes;
+  /// **'إخفاء مرجع تحفة الأشراف'**
+  String get hideTuhfa;
+
+  /// No description provided for @tuhfaDisclaimer.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم تحفة الأشراف من إضافة محقق الطبعة، وليس من نص صحيح البخاري.'**
+  String get tuhfaDisclaimer;
+
+  /// No description provided for @readerCopyWithTuhfa.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسخ مع مرجع تحفة الأشراف'**
+  String get readerCopyWithTuhfa;
 
   /// No description provided for @settingsFontSize.
   ///
@@ -649,12 +631,6 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'إبقاء الشاشة مضاءة أثناء القراءة'**
   String get settingsKeepAwake;
-
-  /// No description provided for @settingsShowFootnoteMarkers.
-  ///
-  /// In ar, this message translates to:
-  /// **'إظهار أرقام حواشي المحقق في النص'**
-  String get settingsShowFootnoteMarkers;
 
   /// No description provided for @searchTitle.
   ///
@@ -1241,8 +1217,14 @@ abstract class AppLocalizations {
   /// No description provided for @aboutSourceNote.
   ///
   /// In ar, this message translates to:
-  /// **'يُعرض النص كما هو في المصدر دون تعديل. حُذفت مقدمة التحقيق. حواشي المحقق معروضة منفصلة عن النص.'**
+  /// **'يُعرض النص كما هو في المصدر دون تعديل. يقتصر التطبيق على أسماء الكتب والأبواب ونصوص الأحاديث وأرقامها ومراجعها؛ حُذفت مقدمة التحقيق وحواشي المحقق وسائر المواد الإضافية.'**
   String get aboutSourceNote;
+
+  /// No description provided for @aboutUsage.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسخة تجريبية خاصة وغير تجارية.'**
+  String get aboutUsage;
 
   /// No description provided for @aboutVerification.
   ///

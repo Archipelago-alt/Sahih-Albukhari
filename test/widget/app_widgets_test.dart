@@ -41,8 +41,7 @@ Future<Book2> loadBook2(WidgetTester tester, TestDbs dbs) async {
 
 // List items built in the cache area outside the viewport count as
 // offstage, so position checks look past that.
-/// The source text shown by a [SelectableText], without the tappable
-/// editor's footnote markers inserted into it.
+/// The source text shown by a [SelectableText] (any tappable spans excluded).
 String sourceTextOf(SelectableText w) {
   final out = StringBuffer();
   w.textSpan?.visitChildren((s) {

@@ -9,7 +9,6 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../app/providers.dart';
 import '../../app/theme.dart';
 import '../../core/arabic/arabic_normalizer.dart';
-import '../../data/content/content_models.dart';
 import '../../data/user/user_repository.dart';
 import '../../shared/context_ext.dart';
 import '../../shared/state_views.dart';
@@ -115,7 +114,7 @@ class _ReaderState extends ConsumerState<_Reader> with WidgetsBindingObserver {
       final loaded = await ref.read(
         hadithBlockProvider((bookId: o.book.id, block: ordinal ~/ ReaderOutline.blockSize)).future,
       );
-      final text = loaded[t.hadithId]?.hadith.text ?? '';
+      final text = loaded[t.hadithId]?.text ?? '';
       final nt = ArabicNormalizer.normalize(text, broad: t.highlight!.broad);
       final tokens = t.highlight!.tokens;
       final at = tokens.isEmpty ? -1 : nt.indexOf(tokens.first);
@@ -464,14 +463,16 @@ class _EntryView extends ConsumerWidget {
     final pad = settings.pagePadding;
     final entry = outline.entries[index];
     final styles = readerTextStyles(settings, palette);
-    Widget source(String text, FootnoteOwner owner, int id, {TextAlign align = TextAlign.justify, double scale = 1}) =>
-        SourceText(
-          text: text,
-          styles: scale == 1 ? styles : readerTextStyles(settings, palette, scale: scale),
-          markers: outline.notesOf(owner, id),
-          showMarkers: settings.showFootnoteMarkers,
-          textAlign: align,
-        );
+    Widget source(String text, {TextAlign align = TextAlign.justify}) =>
+        SourceText(text: text, styles: styles, textAlign: align);
+    SourceTextStyles headingStyles(double scale) {
+      final s = readerTextStyles(settings, palette, scale: scale);
+      return SourceTextStyles(
+        base: s.base.copyWith(color: palette.heading, fontWeight: FontWeight.w700),
+        emphasis: s.emphasis,
+        highlight: s.highlight,
+      );
+    }
 
     switch (entry) {
       case BookHeaderEntry(:final book):
@@ -480,43 +481,18 @@ class _EntryView extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (book.preamble != null)
-                source(book.preamble!, FootnoteOwner.bookPreamble, book.id, align: TextAlign.center),
+              if (book.preamble != null) source(book.preamble!, align: TextAlign.center),
               Semantics(
                 header: true,
-                child: DefaultTextStyle.merge(
-                  style: TextStyle(color: palette.heading, fontWeight: FontWeight.w700),
-                  child: SourceText(
-                    text: book.heading,
-                    styles: readerTextStyles(settings, palette, scale: 1.35).let(
-                      (s) => SourceTextStyles(
-                        base: s.base.copyWith(color: palette.heading, fontWeight: FontWeight.w700),
-                        emphasis: s.emphasis,
-                        marker: s.marker,
-                        highlight: s.highlight,
-                      ),
-                    ),
-                    markers: _offsetMarkers(
-                      outline.notesOf(FootnoteOwner.bookTitle, book.id),
-                      book.heading,
-                      book.title,
-                    ),
-                    showMarkers: settings.showFootnoteMarkers,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+                child: SourceText(text: book.heading, styles: headingStyles(1.35), textAlign: TextAlign.center),
               ),
-              if (book.intro != null) ...[
-                const SizedBox(height: 12),
-                source(book.intro!, FootnoteOwner.bookIntro, book.id),
-              ],
+              if (book.intro != null) ...[const SizedBox(height: 12), source(book.intro!)],
               const SizedBox(height: 8),
               Divider(color: palette.divider),
             ],
           ),
         );
       case ChapterHeaderEntry(:final chapter):
-        final headingStyles = readerTextStyles(settings, palette, scale: 1.12);
         return Padding(
           padding: EdgeInsets.fromLTRB(pad, 28, pad + (chapter.depth - 1) * 8, 8),
           child: Column(
@@ -528,25 +504,11 @@ class _EntryView extends ConsumerWidget {
                 header: true,
                 child: SourceText(
                   text: chapter.heading ?? '',
-                  styles: SourceTextStyles(
-                    base: headingStyles.base.copyWith(color: palette.heading, fontWeight: FontWeight.w700),
-                    emphasis: headingStyles.emphasis,
-                    marker: headingStyles.marker,
-                    highlight: headingStyles.highlight,
-                  ),
-                  markers: _offsetMarkers(
-                    outline.notesOf(FootnoteOwner.chapterTitle, chapter.id),
-                    chapter.heading ?? '',
-                    chapter.title ?? '',
-                  ),
-                  showMarkers: settings.showFootnoteMarkers,
+                  styles: headingStyles(1.12),
                   textAlign: TextAlign.center,
                 ),
               ),
-              if (chapter.intro != null) ...[
-                const SizedBox(height: 10),
-                source(chapter.intro!, FootnoteOwner.chapterIntro, chapter.id),
-              ],
+              if (chapter.intro != null) ...[const SizedBox(height: 10), source(chapter.intro!)],
               if (chapter.hadithCount == 0 && chapter.intro == null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
@@ -573,11 +535,10 @@ class _EntryView extends ConsumerWidget {
               ),
             ),
             data: (map) {
-              final loaded = map[hadithId];
-              if (loaded == null) return const SizedBox.shrink();
+              final hadith = map[hadithId];
+              if (hadith == null) return const SizedBox.shrink();
               return HadithView(
-                hadith: loaded.hadith,
-                footnotes: loaded.footnotes,
+                hadith: hadith,
                 book: outline.book,
                 chapter: outline.chapters[chapterId],
                 highlight: target.hadithId == hadithId ? target.highlight : null,
@@ -610,19 +571,4 @@ class _EntryView extends ConsumerWidget {
         );
     }
   }
-
-  /// Footnote offsets of titles are relative to the title (number removed);
-  /// the reader displays the full heading, so shift them.
-  static List<FootnoteRef> _offsetMarkers(List<FootnoteRef> refs, String heading, String title) {
-    final shift = heading.length - title.length;
-    if (shift <= 0 || !heading.endsWith(title)) return refs;
-    return [
-      for (final r in refs)
-        FootnoteRef(offset: r.offset + shift, marker: r.marker, footnoteId: r.footnoteId, footnoteText: r.footnoteText),
-    ];
-  }
-}
-
-extension _Let<T> on T {
-  R let<R>(R Function(T it) f) => f(this);
 }

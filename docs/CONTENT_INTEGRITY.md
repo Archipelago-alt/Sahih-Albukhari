@@ -18,10 +18,11 @@ app. Neither source file is ever modified.
 1. Read the cached Shamela pages exactly as served.
 2. Exclude the editor's introduction (`مقدمة التحقيق`, Shamela pages 1–152)
    and ornamental separators (`* * *`).
-3. Move the editor's footnote markers (e.g. `(٣)`) out of the text into a
-   separate table, recording their exact character offsets, together with
-   the single space Shamela places next to each marker. The display text
-   plus the markers reproduces Shamela's text; this is checked by tests.
+3. Remove the editor's footnote markers (e.g. `(٣)`) from the text, together
+   with the single space Shamela places next to each marker. Nothing else in
+   the text changes; the integrity tests compare the result with an
+   independent extraction of the source. The markers are still located (for
+   the report), but neither they nor the footnotes are stored.
 4. Move the `• [n] ` prefix of each hadith into the hadith-number field.
 5. Join a paragraph that continues across a printed-page boundary with one
    space when the earlier page does not end in terminal punctuation (every
@@ -48,9 +49,11 @@ They are never resolved silently; the project owner decides.
 
 Footnotes (variant readings of the riwayat, explanations of rare words) and
 Tuhfat al-Ashraf references are the edition editor's work, not part of
-al-Bukhari's text. The app shows them in a separate, clearly labelled
-"حواشي المحقق" section and marks their numbers in the text (the owner chose
-"show all, separated"); they can be hidden in the reader settings.
+al-Bukhari's text. By the owner's decision of 2026-09-14 the app contains
+only the original book names, chapter names, hadith texts, numbering and
+references: the **footnotes are not included** (content schema 2), and the
+Tuhfat al-Ashraf number is kept as a reference, shown only on request under
+the hadith with a label saying it is the editor's addition.
 
 ## Checks that must pass before release
 

@@ -12,10 +12,14 @@ Pipeline (deterministic; no network access):
   6. Write the SQLite database (canonical text + separate search index),
      a canonical JSON export, provenance manifests and the import report.
 
-The display text is Shamela's text with the editor's footnote markers moved
-into a separate table (their exact positions are kept) and with the
-"• [n] " prefix of hadiths moved into the number field. Nothing else is
-changed. Paragraphs that continue across a printed-page boundary are joined
+The display text is Shamela's text with the editor's footnote markers
+removed and the "• [n] " prefix of hadiths moved into the number field.
+Nothing else is changed. The editor's footnotes are not written to the
+database (owner's decision, 2026-09-14): the app contains only the original
+book names, chapter names, hadith texts, numbering and references (printed
+volume/page and Tuhfat al-Ashraf numbers). Markers and footnotes are still
+parsed so that the report can check the source's structure.
+Paragraphs that continue across a printed-page boundary are joined
 with one space when the earlier page does not end in terminal punctuation;
 every join is counted in the report.
 
@@ -41,8 +45,8 @@ from pathlib import Path
 from arabic_normalize import arabic_digits_to_int, normalize
 from shamela_parser import Page, Paragraph, TocNode, load_page
 
-IMPORTER_VERSION = "1.0.0"
-CONTENT_SCHEMA_VERSION = 1
+IMPORTER_VERSION = "1.1.0"
+CONTENT_SCHEMA_VERSION = 2
 BOOK_ID = 1284
 INTRO_TITLE = "مقدمة التحقيق"
 HEADING_RE = re.compile(r"^([٠-٩0-9]+)\s*-\s*")
@@ -527,23 +531,6 @@ CREATE TABLE hadiths (
 CREATE INDEX hadiths_chapter ON hadiths(chapter_id, sort_order);
 CREATE INDEX hadiths_book ON hadiths(book_id, sort_order);
 CREATE INDEX hadiths_number ON hadiths(number);
-CREATE TABLE footnotes (
-  id INTEGER PRIMARY KEY,
-  source_page_id INTEGER NOT NULL,
-  marker TEXT NOT NULL,
-  text TEXT NOT NULL,
-  UNIQUE (source_page_id, marker)
-);
-CREATE TABLE footnote_refs (
-  id INTEGER PRIMARY KEY,
-  owner_type TEXT NOT NULL CHECK (owner_type IN
-    ('book_title','book_preamble','book_intro','chapter_title','chapter_intro','hadith')),
-  owner_id INTEGER NOT NULL,
-  char_offset INTEGER NOT NULL,
-  marker TEXT NOT NULL,
-  footnote_id INTEGER REFERENCES footnotes(id)
-);
-CREATE INDEX footnote_refs_owner ON footnote_refs(owner_type, owner_id, char_offset);
 -- Search-only normalized text (tool/import/arabic_normalize.py). Never displayed.
 CREATE TABLE hadith_search (
   id INTEGER PRIMARY KEY REFERENCES hadiths(id),
@@ -642,6 +629,8 @@ def build(args: argparse.Namespace) -> int:
     con = sqlite3.connect(out_db)
     con.executescript(SCHEMA)
 
+    # Footnote markers are resolved against their page's footnotes only for the
+    # report; neither markers nor footnotes are stored (see module docstring).
     marker_refs: list[tuple[str, int, int, str, int | None]] = []
     unresolved_markers: list[str] = []
     used_footnotes: set[int] = set()
@@ -654,9 +643,6 @@ def build(args: argparse.Namespace) -> int:
             else:
                 used_footnotes.add(fid)
             marker_refs.append((owner_type, owner_id, offset, marker, None if fid is None else fid + 1))
-
-    for i, row in enumerate(fn_rows, start=1):
-        con.execute("INSERT INTO footnotes VALUES (?,?,?,?)", (i, row["page_id"], row["marker"], row["text"]))
 
     chapter_rows: list[dict] = []
     book_ids: dict[int, int] = {}
@@ -790,10 +776,6 @@ def build(args: argparse.Namespace) -> int:
             }
         )
 
-    con.executemany(
-        "INSERT INTO footnote_refs(owner_type, owner_id, char_offset, marker, footnote_id) VALUES (?,?,?,?,?)",
-        marker_refs,
-    )
     # Aggregates.
     con.executescript(
         """
@@ -834,8 +816,8 @@ def build(args: argparse.Namespace) -> int:
         "chapters": len(chapters),
         "implicit_chapters": len(implicit),
         "hadith_records": len(hadiths),
-        "footnotes": len(fn_rows),
-        "footnote_markers": total_markers,
+        "source_footnotes_not_included": len(fn_rows),
+        "source_footnote_markers_removed": total_markers,
         "page_boundary_joins": total_joins,
         "hadith_records_with_two_numbers": len(ranged),
         "first_hadith_number": hadiths[0].number_text if hadiths else None,
@@ -1015,7 +997,8 @@ def write_markdown_report(report: dict, db_path: Path) -> None:
         f"- Chapters (with a heading in the source): **{t['chapters']}**",
         f"- Hadith records: **{t['hadith_records']}** (numbers {t['first_hadith_number']} → {t['last_hadith_number']})",
         f"- Books whose hadiths are not under any chapter heading: {t['implicit_chapters']}",
-        f"- Editor footnotes stored: {t['footnotes']}; footnote markers: {t['footnote_markers']}",
+        f"- Editor footnotes in the source (not included in the app): {t['source_footnotes_not_included']}; "
+        f"footnote markers removed from the text: {t['source_footnote_markers_removed']}",
         f"- Paragraphs joined across a printed-page boundary: {t['page_boundary_joins']}",
         "",
         "## Checks",
@@ -1074,10 +1057,10 @@ def write_markdown_report(report: dict, db_path: Path) -> None:
         "Paragraphs starting with a bullet but without a hadith number:",
         "",
         _lst(report["segmentation"]["bullet_paragraphs_without_hadith_number"]),
-        "Footnote markers without a footnote on the same page:",
+        "Source check — footnote markers without a footnote on the same page:",
         "",
         _lst(c["unresolved_footnote_markers"]),
-        "Footnotes never referenced by a marker:",
+        "Source check — footnotes never referenced by a marker:",
         "",
         _lst(c["unreferenced_footnotes"]),
         "Numbers in parentheses kept as text because they are not footnote markers "
