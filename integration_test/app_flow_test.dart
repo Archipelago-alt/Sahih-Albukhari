@@ -12,7 +12,7 @@ import 'package:sahih_albukhari/main.dart';
 const bookTitle = 'كِتَابُ الإيمَانِ';
 const chapterHeading = '٩ - بَابُ حَلَاوَةِ الْإِيمَانِ';
 const hadithLabel = 'حديث رقم ١٦';
-const hadithOpening = 'حدثنا مُحَمَّدُ بْنُ الْمُثَنَّى';
+const hadithOpening = 'حدثنا مُحَمَّدُ بْنُ';
 const noteText = 'ملاحظة اختبار التكامل';
 
 Future<void> settle(WidgetTester tester, [int seconds = 2]) async {
@@ -21,7 +21,26 @@ Future<void> settle(WidgetTester tester, [int seconds = 2]) async {
   }
 }
 
+/// The screen's main list; screens also contain other scrollables (text
+/// fields), so scrolling must name the one to drag.
+Finder listScrollable(Type list) => find.descendant(of: find.byType(list), matching: find.byType(Scrollable)).first;
+
+/// Taps the app bar's back button. `tester.pageBack()` looks for the
+/// English "Back" tooltip, which the Arabic interface does not have.
+Future<void> goBack(WidgetTester tester) => tester.tap(find.byType(BackButton).first);
+
 Finder hadith16() => find.ancestor(of: find.text(hadithLabel), matching: find.byType(HadithView));
+
+/// The source text shown by a [SelectableText], without the tappable
+/// editor's footnote markers inserted into it (e.g. `بَابُ(٤)`).
+String sourceTextOf(SelectableText w) {
+  final out = StringBuffer();
+  w.textSpan?.visitChildren((s) {
+    if (s is TextSpan && s.recognizer == null) out.write(s.text ?? '');
+    return true;
+  });
+  return out.toString();
+}
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -33,12 +52,12 @@ void main() {
     // 1–2. Open the books list and book 2.
     await tester.tap(find.text('الكتب').first);
     await settle(tester);
-    await tester.scrollUntilVisible(find.text(bookTitle), 200);
+    await tester.scrollUntilVisible(find.text(bookTitle), 200, scrollable: listScrollable(ListView));
     await tester.tap(find.text(bookTitle));
     await settle(tester);
 
     // 3–4. Open chapter 9 and confirm its original name.
-    await tester.scrollUntilVisible(find.text(chapterHeading), 200);
+    await tester.scrollUntilVisible(find.text(chapterHeading), 200, scrollable: listScrollable(CustomScrollView));
     expect(find.text(chapterHeading), findsOneWidget);
     await tester.tap(find.text(chapterHeading));
     await settle(tester, 3);
@@ -48,11 +67,7 @@ void main() {
     expect(hadith16(), findsOneWidget);
     final headingY = tester
         .getTopLeft(
-          find
-              .byWidgetPredicate(
-                (w) => w is SelectableText && (w.textSpan?.toPlainText() ?? '').startsWith(chapterHeading),
-              )
-              .first,
+          find.byWidgetPredicate((w) => w is SelectableText && sourceTextOf(w).startsWith(chapterHeading)).first,
         )
         .dy;
     expect(tester.getTopLeft(hadith16()).dy, greaterThan(headingY));
@@ -78,11 +93,11 @@ void main() {
     expect(find.text(noteText), findsOneWidget);
 
     // 8–9. Search a verified phrase and open the result in its chapter.
-    await tester.pageBack();
+    await goBack(tester);
     await settle(tester);
-    await tester.pageBack();
+    await goBack(tester);
     await settle(tester);
-    await tester.pageBack();
+    await goBack(tester);
     await settle(tester);
     await tester.tap(find.text('البحث').first);
     await settle(tester);
@@ -109,7 +124,7 @@ void main() {
     await tester.tap(find.text('العلامات').first);
     await settle(tester);
     expect(find.textContaining(hadithLabel), findsOneWidget);
-    await tester.pageBack();
+    await goBack(tester);
     await settle(tester);
     await tester.tap(find.text('ملاحظاتي').first);
     await settle(tester);

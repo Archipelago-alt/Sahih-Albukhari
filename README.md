@@ -164,8 +164,11 @@ character with an independent extraction of the source) and widget tests
 highlighting, bookmarks, empty/error states, large text). 81 tests; all
 passed on 2026-09-14 with Flutter 3.47.4.
 
-`integration_test/app_flow_test.dart` (open → search → open result →
-bookmark → note → backup) needs a device or emulator.
+`integration_test/app_flow_test.dart` runs on a device or emulator: browse
+to book 2, open chapter 9, check the heading and hadith ١٦ beneath it,
+bookmark it, add a note, search a phrase and open the result in its
+chapter, restart, and check that the bookmark, note and reading position
+persist. It passed on 2026-09-14 on an Android 35 x86_64 emulator (67 s).
 
 Search timings and database size: [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
 
