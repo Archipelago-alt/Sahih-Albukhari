@@ -18,8 +18,9 @@ text — never rewritten, normalized or "corrected".
   chapter, jump to a hadith number, current book/chapter indicator,
   selectable text, adjustable font, line height and margins, light / sepia /
   dark / system themes, optional keep-screen-awake.
-- The edition editor's footnotes and Tuhfat al-Ashraf references, clearly
-  separated from the text as «حواشي المحقق» (markers can be hidden).
+- Hadith references: book, chapter, number, printed volume and page, and the
+  edition's Tuhfat al-Ashraf number (shown separately, on request). The
+  editor's footnotes are not included.
 - Search: all words, exact phrase, exact-with-diacritics; normalized Arabic
   (diacritics, tatweel, alef forms, alif maqṣūra, digits; optional ة/ه
   folding); whole-word option; hadith-number search; book and chapter name
@@ -127,6 +128,9 @@ See [docs/IMPORT.md](docs/IMPORT.md) (workflow, schema, identifiers) and
   introductions of Ahmad Shakir, al-Shaykh Hassuna and the Sultaniyya
   correctors), front matter and ornamental separators. The printed tables of
   contents are not part of the Shamela text.
+- **Also excluded:** the editor's footnotes (حواشي المحقق); their markers are
+  removed from the text. Kept as references: printed volume/page and the
+  Tuhfat al-Ashraf numbers.
 - Content rules: [docs/CONTENT_INTEGRITY.md](docs/CONTENT_INTEGRITY.md).
 
 Imported content (from the latest import report):
@@ -137,7 +141,7 @@ Imported content (from the latest import report):
 | Chapters with a heading in the source | 3,957 (341 of them present only in the body, not in Shamela's table of contents) |
 | Books whose hadiths are not under any chapter heading | 56 |
 | Hadith records | 7,436 — numbers ١ to ٧٥٥٩, none missing (118 records are printed under two numbers) |
-| Editor footnotes / markers | 31,493 / 32,834 |
+| Editor's footnotes | not included (31,493 in the source; their 32,834 markers are removed from the text) |
 | Importer errors / warnings | 0 / 0 |
 
 ## Search and Arabic normalization
@@ -172,13 +176,23 @@ persist. It passed on 2026-09-14 on an Android 35 x86_64 emulator (67 s).
 
 Search timings and database size: [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
 
+## Attribution
+
+The text of Sahih al-Bukhari in this app is taken from **Al-Maktaba
+Al-Shamela** (المكتبة الشاملة), book 1284 — «صحيح البخاري - ط التأصيل»,
+<https://shamela.ws/book/1284>. Printed edition: *Sahih al-Bukhari*, revised
+and corrected against the Sultaniyya edition, Dar al-Ta'seel, Cairo, 1st
+edition, 1433 AH / 2012 CE. The app shows the same attribution on its About
+screen.
+
 ## Licensing
 
 - **Code:** MIT — see [LICENSE](LICENSE).
-- **Book data:** *not* covered by the code licence; the edition is
-  copyrighted by its publisher. The generated database is not committed.
-  **A licensing decision by the project owner is required before public
-  distribution** — see [docs/DATA_LICENSE.md](docs/DATA_LICENSE.md).
+- **Book data:** not covered by the code licence. The project owner has
+  authorised the Shamela text for this private, non-commercial test app
+  (2026-09-14). The database is built locally and not committed, and no APK
+  or database is published. Redistribution considerations for later review:
+  [docs/DATA_LICENSE.md](docs/DATA_LICENSE.md).
 - **Fonts:** Amiri, Noto Naskh Arabic, Noto Sans Arabic — SIL OFL 1.1
   (licence files in `assets/fonts/`).
 
@@ -187,9 +201,8 @@ Search timings and database size: [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
 - Only representative records were compared with the printed edition by
   eye; see "Known limitations" and "Decisions needed" in
   [docs/VERIFICATION.md](docs/VERIFICATION.md).
-- The book data may not be redistributed until the licensing decision in
-  [docs/DATA_LICENSE.md](docs/DATA_LICENSE.md) is made; the database is
-  built locally by the importer.
+- Private, non-commercial test build: the book data, the database and APKs
+  are not published; see [docs/DATA_LICENSE.md](docs/DATA_LICENSE.md).
 - iOS is not built or tested in this environment.
 - Startup was measured on an Android emulator only; there are no
   physical-device numbers yet (see docs/PERFORMANCE.md).

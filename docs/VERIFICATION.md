@@ -218,8 +218,8 @@ exactly as Shamela has them.
     page therefore has no marker.
   - page 4631 (printed vol. 9 p. 343): `((٧)`
 - **Footnotes never referenced by a marker:** page 260 (٣) and page 2944
-  (١٢) — the two cases above. Both footnotes are stored and shown in the
-  hadith's editor's-notes section.
+  (١٢) — the two cases above. Recorded as a property of the source; the
+  app no longer includes the editor's footnotes.
 - **Bracketed text marked up as a hadith number** inside a paragraph: page
   1118 (printed vol. 3 p. 434), `[الطور: ١، ٢]`. It is a Quran reference, so
   it is kept as text and does not start a new record.
@@ -264,6 +264,8 @@ exception list if the owner decides to follow the print anywhere.
 - D7–D25: diacritic differences in individual words (listed per sample
   above).
 - The four footnote numbers typed as text (pages 260, 2811, 2944, 4631):
-  keep as text (current), or treat as markers.
-- Licensing of the book data before any public distribution — see
-  [DATA_LICENSE.md](DATA_LICENSE.md).
+  keep as text (current — they are typed as part of Shamela's text), or
+  remove them like the other footnote markers.
+- Licensing: resolved for the private, non-commercial test app (owner's
+  decision, 2026-09-14); redistribution needs review before any public
+  release — see [DATA_LICENSE.md](DATA_LICENSE.md).
