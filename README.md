@@ -35,7 +35,8 @@ text — never rewritten, normalized or "corrected".
 
 ## Platforms and versions
 
-- Android (primary), iOS and tablets (same code base; iOS not built here).
+- Android 7.0 (API 24) or newer, targeting API 36 — the primary platform.
+  iOS and tablets use the same code base; iOS is not built here.
 - Flutter **3.47.4** (stable), Dart **3.13.3** — see `pubspec.yaml`.
 
 ## Getting started

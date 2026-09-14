@@ -73,5 +73,28 @@ on a device with `--profile` and read the timeline, or time
 |---|---|
 | First launch: copy + SHA-256 check of the 29 MB database | not measured on a device yet |
 | Cold start | not measured on a device yet |
-| Debug APK | pending (build in progress) |
-| Release APK | pending |
+| Debug APK (`flutter build apk --debug`, all ABIs, JIT; not representative of release size) | 187,486,212 bytes (178.8 MiB), built in 655 s on 2026-09-14 |
+| Release APK (`flutter build apk --release`, all three ABIs, AOT, icon fonts tree-shaken) | 70,209,913 bytes (67.0 MiB), built in 117 s on 2026-09-14 |
+| Release APK, arm64-v8a only (`--split-per-abi`; what most phones download) | 28,715,105 bytes (27.4 MiB) |
+| Release APK, armeabi-v7a only | 26,222,505 bytes (25.0 MiB) |
+| Release APK, x86_64 only | 30,166,841 bytes (28.8 MiB) |
+
+Inside the debug APK (`unzip -v`), the content database is stored deflated:
+29,143,040 bytes → 7,879,070 bytes. Most of the debug size is the Flutter
+engine for three ABIs (`libflutter.so`: 40.1 MB x86_64, 38.8 MB arm64-v8a,
+33.2 MB armeabi-v7a, stored uncompressed), the debug-only kernel blob
+(35.5 MB compressed) and a Vulkan validation layer (15.2 MB, debug only).
+`libsqlite3.so` adds about 1.7 MB per ABI.
+
+Release validation of `app-release.apk` (`apksigner verify --print-certs`,
+`aapt2 dump badging`, 2026-09-14):
+
+- The signature verifies (APK Signature Scheme v2, one signer), using the
+  **Android Debug** certificate. Fine for testing; a store release needs a
+  locally configured release key (see README).
+- Package `io.github.archipelagoalt.sahih_albukhari`, version 1.0.0 (code 1),
+  minSdk 24 (Android 7.0), targetSdk and compileSdk 36, label «صحيح البخاري»;
+  native code for arm64-v8a, armeabi-v7a and x86_64.
+- The only permission is the AndroidX-generated
+  `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`. There is no `INTERNET`
+  permission.
