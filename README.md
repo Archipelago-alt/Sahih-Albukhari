@@ -65,6 +65,7 @@ flutter run
 | Integration test (device/emulator) | `flutter test integration_test/app_flow_test.dart` |
 | App icons | `python3 tool/icon/generate_icon.py && dart run flutter_launcher_icons` |
 | Search benchmark | `python3 tool/bench/search_bench.py` |
+| Startup timing (device/emulator) | `tool/bench/cold_start.sh` |
 | Android debug / release | `flutter build apk --debug` / `flutter build apk --release` |
 
 Release builds are currently signed with the debug key
@@ -187,7 +188,8 @@ Search timings and database size: [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
   [docs/DATA_LICENSE.md](docs/DATA_LICENSE.md) is made; the database is
   built locally by the importer.
 - iOS is not built or tested in this environment.
-- No on-device performance numbers yet (see docs/PERFORMANCE.md).
+- Startup was measured on an Android emulator only; there are no
+  physical-device numbers yet (see docs/PERFORMANCE.md).
 
 ## Privacy
 

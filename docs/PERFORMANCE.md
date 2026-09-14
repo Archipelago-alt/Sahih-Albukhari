@@ -56,8 +56,7 @@ is bounded and does not depend on how common the word is. In the app the
 query runs on drift's background isolate, so the UI thread never waits on
 it; the search field is debounced and results are paged.
 
-On-device search timings: **not measured yet** (no device or emulator was
-available in the build environment). To measure, run the integration test
+On-device search timings: **not measured yet**. To measure, run the integration test
 on a device with `--profile` and read the timeline, or time
 `SearchRepository.search` from a debug build.
 
@@ -69,10 +68,17 @@ on a device with `--profile` and read the timeline, or time
 
 ## Startup and package size
 
+Startup was measured on an Android 35 x86_64 emulator (KVM, 4 cores, 3 GB
+RAM, software rendering via SwiftShader) with the x86_64 release APK, on
+2026-09-14, with `tool/bench/cold_start.sh`. An emulator is not a phone:
+physical-device numbers are still to be measured (run the same script with
+`ABI=arm64-v8a DEVICE=<serial>`).
+
 | | Value |
 |---|---|
-| First launch: copy + SHA-256 check of the 29 MB database | not measured on a device yet |
-| Cold start | not measured on a device yet |
+| First launch after install (copies and SHA-256-checks the database) | first frame 1,380 ms (`am start -W` TotalTime); home screen visible after about 4.0 s (wall clock, polled with uiautomator at ~1 s granularity) |
+| Cold start, database already installed (`am force-stop`, then `am start -W`; 5 runs) | median 1,312 ms (range 1,181–1,377 ms) |
+| App data after first launch | 28,756 KiB (the installed database copy) |
 | Debug APK (`flutter build apk --debug`, all ABIs, JIT; not representative of release size) | 187,486,212 bytes (178.8 MiB), built in 655 s on 2026-09-14 |
 | Release APK (`flutter build apk --release`, all three ABIs, AOT, icon fonts tree-shaken) | 70,209,913 bytes (67.0 MiB), built in 117 s on 2026-09-14 |
 | Release APK, arm64-v8a only (`--split-per-abi`; what most phones download) | 28,715,105 bytes (27.4 MiB) |
