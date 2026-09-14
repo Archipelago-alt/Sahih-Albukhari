@@ -66,8 +66,11 @@ flutter run
 | Search benchmark | `python3 tool/bench/search_bench.py` |
 | Android debug / release | `flutter build apk --debug` / `flutter build apk --release` |
 
-Release builds are signed with the debug key unless
-`android/key.properties` exists (never committed).
+Release builds are currently signed with the debug key
+(`android/app/build.gradle.kts`), which is fine for testing but not for a
+store. Before publishing, add a release signing config locally;
+`android/key.properties`, `*.jks` and `*.keystore` are gitignored and must
+never be committed.
 
 ## Architecture
 
