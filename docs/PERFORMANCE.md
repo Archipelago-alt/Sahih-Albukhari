@@ -11,8 +11,8 @@ marked as such rather than estimated.
 
 | | Size |
 |---|---|
-| Database file | 29,143,040 bytes (29.1 MB) |
-| gzip -9 of the file (indication of compressibility) | 5,851,360 bytes (5.9 MB) |
+| Database file (content schema 2) | 23,343,104 bytes (23.3 MB) |
+| gzip -9 of the file (indication of compressibility) | 4,102,297 bytes (4.1 MB) |
 
 Largest tables and indexes (SQLite `dbstat`):
 
@@ -20,10 +20,13 @@ Largest tables and indexes (SQLite `dbstat`):
 |---|---|---|
 | `hadiths` (original text, style spans, references) | 10,321,920 | 7,436 |
 | `hadith_search` (normalized + broad-normalized text) | 9,809,920 | 7,436 |
-| `footnotes` | 3,612,672 | 31,493 |
 | `chapters` | 1,875,968 | 4,013 |
-| `footnote_refs` + `footnote_refs_owner` index | 991,232 + 712,704 | 32,834 |
 | `heading_search` | 630,784 | 4,052 |
+
+Content schema 2 (2026-09-14) removed the editor's footnotes: the `footnotes`
+and `footnote_refs` tables and their index took 5.8 MB of the previous
+29.1 MB file. The search tables are unchanged, so the search timings below
+(measured with schema 1) still apply.
 
 The search columns roughly double the text size. That is the price of
 matching inside words and with diacritics removed without touching the
@@ -70,30 +73,37 @@ on a device with `--profile` and read the timeline, or time
 
 Startup was measured on an Android 35 x86_64 emulator (KVM, 4 cores, 3 GB
 RAM, software rendering via SwiftShader) with the x86_64 release APK, on
-2026-09-14, with `tool/bench/cold_start.sh`. An emulator is not a phone:
+2026-09-14, with `tool/bench/cold_start.sh`, using content schema 2 (23.3 MB
+database). An emulator is not a phone:
 physical-device numbers are still to be measured (run the same script with
 `ABI=arm64-v8a DEVICE=<serial>`).
 
+An earlier run with content schema 1 (29.1 MB database, same emulator)
+measured a first frame of 1,380 ms, the home screen after about 4.0 s and a
+cold-start median of 1,312 ms. Emulator timings vary between runs, so the
+difference is not attributed to the smaller database alone.
+
 | | Value |
 |---|---|
-| First launch after install (copies and SHA-256-checks the database) | first frame 1,380 ms (`am start -W` TotalTime); home screen visible after about 4.0 s (wall clock, polled with uiautomator at ~1 s granularity) |
-| Cold start, database already installed (`am force-stop`, then `am start -W`; 5 runs) | median 1,312 ms (range 1,181–1,377 ms) |
-| App data after first launch | 28,756 KiB (the installed database copy) |
-| Debug APK (`flutter build apk --debug`, all ABIs, JIT; not representative of release size) | 187,486,212 bytes (178.8 MiB), built in 655 s on 2026-09-14 |
-| Release APK (`flutter build apk --release`, all three ABIs, AOT, icon fonts tree-shaken) | 70,209,913 bytes (67.0 MiB), built in 117 s on 2026-09-14 |
-| Release APK, arm64-v8a only (`--split-per-abi`; what most phones download) | 28,715,105 bytes (27.4 MiB) |
-| Release APK, armeabi-v7a only | 26,222,505 bytes (25.0 MiB) |
-| Release APK, x86_64 only | 30,166,841 bytes (28.8 MiB) |
+| First launch after install (copies and SHA-256-checks the database) | first frame 1,031 ms (`am start -W` TotalTime); home screen visible after about 3.2 s (wall clock, polled with uiautomator at ~1 s granularity) |
+| Cold start, database already installed (`am force-stop`, then `am start -W`; 5 runs) | median 838 ms (range 705–895 ms) |
+| App data after first launch | 23,092 KiB (the installed database copy) |
+| Debug APK (`flutter build apk --debug`, all ABIs, JIT; not representative of release size) | 187,486,212 bytes (178.8 MiB), built in 655 s on 2026-09-14 (content schema 1; not rebuilt since) |
+| Release APK (`flutter build apk --release`, all three ABIs, AOT, icon fonts tree-shaken) | 68,324,605 bytes (65.2 MiB), content schema 2 (schema 1: 70,209,913 bytes) |
+| Release APK, arm64-v8a only (`--split-per-abi`; what most phones download) | 26,862,565 bytes (25.6 MiB) (schema 1: 28,715,105 bytes) |
+| Release APK, armeabi-v7a only | 24,402,733 bytes (23.3 MiB) |
+| Release APK, x86_64 only | 28,379,833 bytes (27.1 MiB) |
 
-Inside the debug APK (`unzip -v`), the content database is stored deflated:
-29,143,040 bytes → 7,879,070 bytes. Most of the debug size is the Flutter
+Inside the debug APK (`unzip -v`, content schema 1), the content database is
+stored deflated: 29,143,040 bytes → 7,879,070 bytes. In the schema-2 release
+APK it is 23,343,104 bytes → 4,224,358 bytes. Most of the debug size is the Flutter
 engine for three ABIs (`libflutter.so`: 40.1 MB x86_64, 38.8 MB arm64-v8a,
 33.2 MB armeabi-v7a, stored uncompressed), the debug-only kernel blob
 (35.5 MB compressed) and a Vulkan validation layer (15.2 MB, debug only).
 `libsqlite3.so` adds about 1.7 MB per ABI.
 
 Release validation of `app-release.apk` (`apksigner verify --print-certs`,
-`aapt2 dump badging`, 2026-09-14):
+`aapt2 dump badging`, 2026-09-14; re-checked on the content-schema-2 build):
 
 - The signature verifies (APK Signature Scheme v2, one signer), using the
   **Android Debug** certificate. Fine for testing; a store release needs a
